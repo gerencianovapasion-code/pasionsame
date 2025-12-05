@@ -2,11 +2,12 @@ module.exports = {
   apps: [
     {
       name: 'nextjs-app',
-      script: 'node_modules/next/dist/bin/next',
+      script: 'npm',
       args: 'start',
       cwd: process.cwd(),
       instances: 2,
       exec_mode: 'cluster',
+      interpreter: 'none',
       env: {
         NODE_ENV: 'production',
         PORT: 3000
@@ -16,11 +17,14 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
       autorestart: true,
-      max_memory_restart: '1G'
+      max_memory_restart: '1G',
+      max_restarts: 10,
+      min_uptime: '10s'
     },
     {
       name: 'socket-server',
-      script: './server.js',
+      script: 'node',
+      args: 'server.js',
       cwd: process.cwd(),
       instances: 1,
       env: {
@@ -30,7 +34,9 @@ module.exports = {
       out_file: './logs/socket-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       autorestart: true,
-      max_memory_restart: '500M'
+      max_memory_restart: '500M',
+      max_restarts: 10,
+      min_uptime: '10s'
     }
   ]
 }
