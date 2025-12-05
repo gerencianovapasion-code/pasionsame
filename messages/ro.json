@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "home": "Acasă",
+    "languages": "Limbi",
+    "contact": "Contact",
+    "countries": "Țări",
+    "categories": "Categorii",
+    "login": "Autentificare",
+    "register": "Înregistrare",
+    "search": "Căutare..."
+  },
+  "home": {
+    "welcome": "Bun venit la Rețeaua Socială a Creatorilor",
+    "mostActive": "Cei mai activi",
+    "online": "Online",
+    "latestPosts": "Ultimele postări",
+    "topRated": "Cel mai bine cotate",
+    "newMembers": "Membri noi",
+    "random": "Aleatorii"
+  },
+  "categories": {
+    "men": "Bărbați",
+    "women": "Femei",
+    "trans": "Trans"
+  },
+  "membership": {
+    "free": "Gratuit",
+    "bronze": "Bronz",
+    "silver": "Argint",
+    "gold": "Aur",
+    "upgrade": "Actualizează abonamentul"
+  },
+  "profile": {
+    "name": "Nume",
+    "city": "Oraș",
+    "age": "Vârstă",
+    "languages": "Limbi",
+    "gender": "Gen",
+    "nationality": "Naționalitate",
+    "schedule": "Program",
+    "availability": "Disponibilitate",
+    "phone": "Telefon",
+    "share": "Distribuie",
+    "about": "Despre mine",
+    "subscribe": "Abonează-te",
+    "message": "Trimite mesaj"
+  },
+  "common": {
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "edit": "Editează",
+    "upload": "Încarcă",
+    "loading": "Se încarcă...",
+    "error": "Eroare",
+    "success": "Succes"
+  }
+}

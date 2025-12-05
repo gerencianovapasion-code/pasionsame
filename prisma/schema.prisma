@@ -1,0 +1,575 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Sistema Multi-Sitio
+model Site {
+  id           String   @id @default(cuid())
+  domain       String   @unique // influencersex.com, novapasion.com, etc.
+  name         String
+  logo         String?
+  favicon      String?
+  primaryColor String   @default("#e11d48")
+  banners      Banner[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  image     String
+  link      String?
+  position  String // header, sidebar, footer
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Países y Provincias
+model Country {
+  id        String     @id @default(cuid())
+  code      String     @unique // ES, PT, FR, etc.
+  name      String
+  language  String // es, pt, fr, etc.
+  isActive  Boolean    @default(true)
+  provinces Province[]
+  models    Model[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Province {
+  id        String   @id @default(cuid())
+  countryId String
+  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name      String
+  models    Model[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryId, name])
+}
+
+// Usuarios
+enum UserRole {
+  USER
+  MODEL
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  TRANS
+}
+
+enum MembershipType {
+  FREE
+  BRONZE
+  SILVER
+  GOLD
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String?
+  role              UserRole @default(USER)
+  emailVerified     Boolean  @default(false)
+  verificationToken String?
+  stripeCustomerId  String?  @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relaciones
+  model            Model?
+  subscriptions    Subscription[]
+  purchases        Purchase[]
+  reviews          Review[]
+  comments         Comment[]
+  likes            Like[]
+  messages         Message[]      @relation("MessageSender")
+  receivedMessages Message[]      @relation("MessageReceiver")
+  notifications    Notification[]
+  transactions     Transaction[]
+  videoCalls       VideoCall[]
+  streams          Stream[]
+  StreamViewer     StreamViewer[]
+}
+
+// Modelos/Creadores
+model Model {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Información básica
+  username     String  @unique
+  displayName  String
+  bio          String? @db.Text
+  profileImage String?
+  coverImage   String?
+
+  // Detalles del modelo
+  gender      Gender
+  age         Int?
+  city        String?
+  countryId   String
+  country     Country   @relation(fields: [countryId], references: [id])
+  provinceId  String?
+  province    Province? @relation(fields: [provinceId], references: [id])
+  languages   String // JSON array: ["es", "en"]
+  nationality String?
+  phone       String?
+
+  // Membresía
+  membershipType   MembershipType @default(FREE)
+  membershipExpiry DateTime?
+
+  // Configuración
+  subscriptionPrice Decimal   @default(10.00) @db.Decimal(10, 2)
+  stripeProductId   String?   @unique
+  stripePriceId     String?   @unique
+  isVerified        Boolean   @default(false)
+  verificationDoc   String?
+  isOnline          Boolean   @default(false)
+  lastOnline        DateTime?
+
+  // Disponibilidad
+  schedule     String? @db.Text // JSON
+  availability String? @db.Text // JSON
+
+  // Estadísticas
+  totalEarnings    Decimal @default(0) @db.Decimal(10, 2)
+  totalSubscribers Int     @default(0)
+  averageRating    Float   @default(0)
+  totalReviews     Int     @default(0)
+
+  // Posicionamiento automático
+  lastBoosted DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  posts         Post[]
+  media         Media[]
+  subscriptions Subscription[]
+  reviews       Review[]
+  transactions  Transaction[]
+  withdrawals   Withdrawal[]
+  videoCalls    VideoCall[]
+  streams       Stream[]
+
+  @@index([countryId])
+  @@index([provinceId])
+  @@index([membershipType])
+  @@index([isOnline])
+}
+
+// Posts en el muro
+model Post {
+  id            String   @id @default(cuid())
+  modelId       String
+  model         Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  content       String   @db.Text
+  isPremium     Boolean  @default(false)
+  price         Decimal? @db.Decimal(10, 2)
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  media     Media[]
+  likes     Like[]
+  comments  Comment[]
+  purchases Purchase[]
+
+  @@index([modelId])
+  @@index([createdAt])
+}
+
+// Media (fotos, videos, audio)
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  GIF
+}
+
+model Media {
+  id      String  @id @default(cuid())
+  modelId String
+  model   Model   @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  postId  String?
+  post    Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  type      MediaType
+  url       String
+  thumbnail String?
+  duration  Int? // en segundos para video/audio
+  isPremium Boolean   @default(false)
+  price     Decimal?  @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases Purchase[]
+
+  @@index([modelId])
+  @@index([postId])
+}
+
+// Suscripciones
+model Subscription {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelId String
+  model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  isActive  Boolean  @default(true)
+  price     Decimal  @db.Decimal(10, 2)
+  startDate DateTime @default(now())
+  endDate   DateTime
+  autoRenew Boolean  @default(true)
+
+  stripeSubscriptionId String?
+  paypalSubscriptionId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, modelId])
+  @@index([userId])
+  @@index([modelId])
+}
+
+// Compras individuales (PPV - Pay Per View)
+model Purchase {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId  String?
+  post    Post?   @relation(fields: [postId], references: [id])
+  mediaId String?
+  media   Media?  @relation(fields: [mediaId], references: [id])
+
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("EUR")
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([postId])
+  @@index([mediaId])
+}
+
+// Reviews/Calificaciones
+model Review {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelId String
+  model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  rating  Int // 1-5
+  comment String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, modelId])
+  @@index([modelId])
+}
+
+// Likes
+model Like {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+// Comentarios
+model Comment {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  content String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@index([userId])
+}
+
+// Mensajes
+model Message {
+  id         String @id @default(cuid())
+  senderId   String
+  sender     User   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User   @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  content   String     @db.Text
+  mediaUrl  String?
+  mediaType MediaType?
+  isPremium Boolean    @default(false)
+  price     Decimal?   @db.Decimal(10, 2)
+  isRead    Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+// Notificaciones
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    String // new_subscriber, new_tip, new_purchase, etc.
+  title   String
+  message String  @db.Text
+  link    String?
+  isRead  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+// Transacciones
+enum TransactionType {
+  SUBSCRIPTION
+  PURCHASE
+  TIP
+  VIDEOCALL
+  STREAM
+  WITHDRAWAL
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Transaction {
+  id      String  @id @default(cuid())
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelId String?
+  model   Model?  @relation(fields: [modelId], references: [id])
+
+  type        TransactionType
+  status      TransactionStatus @default(PENDING)
+  amount      Decimal           @db.Decimal(10, 2)
+  platformFee Decimal           @db.Decimal(10, 2) // 20%
+  netAmount   Decimal           @db.Decimal(10, 2) // amount - platformFee
+  currency    String            @default("EUR")
+
+  // Pasarelas de pago
+  stripePaymentId String?
+  paypalPaymentId String?
+
+  description String?
+  metadata    String? @db.Text // JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([modelId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Retiros
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+model Withdrawal {
+  id      String @id @default(cuid())
+  modelId String
+  model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  amount  Decimal          @db.Decimal(10, 2)
+  status  WithdrawalStatus @default(PENDING)
+  method  String // paypal, bank_transfer
+  details String           @db.Text // JSON con detalles del método
+
+  notes       String?   @db.Text
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([modelId])
+  @@index([status])
+}
+
+// Videollamadas
+model VideoCall {
+  id      String @id @default(cuid())
+  modelId String
+  model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pricePerMinute Decimal @db.Decimal(10, 2)
+  duration       Int // en minutos
+  totalAmount    Decimal @db.Decimal(10, 2)
+
+  startedAt DateTime
+  endedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([modelId])
+  @@index([userId])
+}
+
+// Streaming en vivo
+model Stream {
+  id      String @id @default(cuid())
+  modelId String
+  model   Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  title        String
+  description  String? @db.Text
+  pricePerView Decimal @db.Decimal(10, 2)
+  isLive       Boolean @default(false)
+  viewersCount Int     @default(0)
+
+  streamKey String  @unique
+  streamUrl String?
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  viewers StreamViewer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+
+  @@index([modelId])
+  @@index([isLive])
+}
+
+model StreamViewer {
+  id       String @id @default(cuid())
+  streamId String
+  stream   Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  @@unique([streamId, userId])
+  @@index([streamId])
+}
+
+// Créditos virtuales "PASIONES"
+model Credits {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  balance Decimal @default(0) @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CreditTransaction {
+  id          String  @id @default(cuid())
+  userId      String
+  amount      Decimal @db.Decimal(10, 2) // positivo = ganancia, negativo = gasto
+  type        String // purchase, earn, bonus
+  description String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Categorías
+model Category {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  slug     String  @unique
+  icon     String?
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Blog
+model BlogPost {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  content     String  @db.LongText
+  excerpt     String? @db.Text
+  image       String?
+  isPublished Boolean @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  @@index([isPublished])
+  @@index([publishedAt])
+}
+
+// Páginas estáticas
+model Page {
+  id       String  @id @default(cuid())
+  title    String
+  slug     String  @unique
+  content  String  @db.LongText
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Configuración del sistema
+model Settings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+
+  updatedAt DateTime @updatedAt
+}

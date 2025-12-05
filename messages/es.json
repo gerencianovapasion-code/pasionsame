@@ -1,0 +1,78 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "languages": "Idiomas",
+    "contact": "Contacto",
+    "countries": "Países",
+    "categories": "Categorías",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "search": "Buscar..."
+  },
+  "home": {
+    "welcome": "Bienvenido a la Red Social de Creadores",
+    "mostActive": "Más Activos",
+    "online": "En Línea",
+    "latestPosts": "Últimas Publicaciones",
+    "topRated": "Mejor Valorados",
+    "newMembers": "Nuevos Miembros",
+    "random": "Aleatorios"
+  },
+  "categories": {
+    "men": "Hombres",
+    "women": "Mujeres",
+    "trans": "Trans"
+  },
+  "countries": {
+    "spain": "España",
+    "portugal": "Portugal",
+    "france": "Francia",
+    "germany": "Alemania",
+    "italy": "Italia",
+    "romania": "Rumania",
+    "uk": "Reino Unido",
+    "usa": "Estados Unidos",
+    "canada": "Canadá",
+    "mexico": "México",
+    "argentina": "Argentina",
+    "colombia": "Colombia",
+    "brazil": "Brasil",
+    "chile": "Chile",
+    "peru": "Perú",
+    "venezuela": "Venezuela",
+    "paraguay": "Paraguay",
+    "uruguay": "Uruguay"
+  },
+  "membership": {
+    "free": "Gratis",
+    "bronze": "Bronce",
+    "silver": "Plata",
+    "gold": "Oro",
+    "upgrade": "Mejorar Membresía"
+  },
+  "profile": {
+    "name": "Nombre",
+    "city": "Ciudad",
+    "age": "Edad",
+    "languages": "Idiomas",
+    "gender": "Género",
+    "nationality": "Nacionalidad",
+    "schedule": "Horario",
+    "availability": "Disponibilidad",
+    "phone": "Teléfono",
+    "share": "Compartir",
+    "about": "Sobre mí",
+    "subscribe": "Suscribirse",
+    "message": "Enviar Mensaje"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "upload": "Subir",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  }
+}

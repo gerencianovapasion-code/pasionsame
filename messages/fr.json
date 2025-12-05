@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "languages": "Langues",
+    "contact": "Contact",
+    "countries": "Pays",
+    "categories": "Catégories",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "search": "Rechercher..."
+  },
+  "home": {
+    "welcome": "Bienvenue sur le Réseau Social des Créateurs",
+    "mostActive": "Les plus actifs",
+    "online": "En ligne",
+    "latestPosts": "Dernières publications",
+    "topRated": "Les mieux notés",
+    "newMembers": "Nouveaux membres",
+    "random": "Aléatoires"
+  },
+  "categories": {
+    "men": "Hommes",
+    "women": "Femmes",
+    "trans": "Trans"
+  },
+  "membership": {
+    "free": "Gratuit",
+    "bronze": "Bronze",
+    "silver": "Argent",
+    "gold": "Or",
+    "upgrade": "Mettre à niveau l'abonnement"
+  },
+  "profile": {
+    "name": "Nom",
+    "city": "Ville",
+    "age": "Âge",
+    "languages": "Langues",
+    "gender": "Genre",
+    "nationality": "Nationalité",
+    "schedule": "Horaire",
+    "availability": "Disponibilité",
+    "phone": "Téléphone",
+    "share": "Partager",
+    "about": "À propos de moi",
+    "subscribe": "S'abonner",
+    "message": "Envoyer un message"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "upload": "Télécharger",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  }
+}
